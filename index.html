@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureNode — Device Control Terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Aldrich&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #020804;
+      --bg-panel:    #050f08;
+      --bg-cell:     #071209;
+      --green:       #00ff41;
+      --green-dim:   #00aa2b;
+      --green-glow:  rgba(0,255,65,0.15);
+      --amber:       #ffb300;
+      --red:         #ff2d2d;
+      --text:        #b0ffb8;
+      --text-dim:    #3a6b42;
+      --border:      rgba(0,255,65,0.18);
+      --border-hot:  rgba(0,255,65,0.55);
+      --font-term:   'Share Tech Mono', monospace;
+      --font-head:   'Aldrich', sans-serif;
+      --font-ui:     'Rajdhani', sans-serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-term); overflow-x: hidden; }
+
+    /* ── SCAN LINES ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 200;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.13) 3px,
+        rgba(0,0,0,0.13) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* ── RADIAL VIGNETTE ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(0,0,0,0.75) 100%);
+      pointer-events: none;
+    }
+
+    /* ── CORNER BRACKETS ── */
+    .bracket-wrap {
+      position: relative;
+    }
+    .bracket-wrap::before, .bracket-wrap::after,
+    .bracket-wrap > .br-bl, .bracket-wrap > .br-br {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      border-color: var(--green-dim);
+      border-style: solid;
+      opacity: 0.6;
+    }
+    .bracket-wrap::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+    .bracket-wrap::after  { top: 0; right: 0; border-width: 2px 2px 0 0; }
+    .bracket-wrap > .br-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+    .bracket-wrap > .br-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+    /* ═══════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════ */
+    .terminal {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 20px 14px 48px;
+      max-width: 780px; margin: 0 auto;
+    }
+
+    /* ═══════════════════════════════════════
+       TOP BAR
+    ═══════════════════════════════════════ */
+    .topbar {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 22px;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    .topbar-left {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .shield-icon {
+      width: 34px; height: 34px;
+      border: 2px solid var(--green);
+      clip-path: polygon(50% 0%, 100% 20%, 100% 70%, 50% 100%, 0% 70%, 0% 20%);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,255,65,0.08);
+      animation: shieldPulse 3s ease-in-out infinite;
+    }
+
+    .shield-inner {
+      width: 10px; height: 10px;
+      background: var(--green);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .brand {
+      font-family: var(--font-head);
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: var(--green);
+      text-shadow: 0 0 12px rgba(0,255,65,0.5);
+      text-transform: uppercase;
+    }
+
+    .brand span { color: var(--text-dim); font-size: 13px; }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 11px; letter-spacing: 1.5px; color: var(--text-dim);
+    }
+
+    .sys-tag {
+      display: flex; align-items: center; gap: 6px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 10px;
+    }
+
+    .sys-tag .blink { animation: textBlink 1.2s step-end infinite; }
+
+    .clock { font-size: 12px; color: var(--green-dim); letter-spacing: 2px; }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
+    header {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 22px;
+      animation: slideRight 0.6s ease 0.1s both;
+    }
+
+    .cmd-prefix {
+      font-size: 11px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 6px;
+    }
+
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(20px, 4.5vw, 34px);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(0,255,65,0.4);
+      line-height: 1.15;
+    }
+
+    h1 em { color: var(--text-dim); font-style: normal; font-size: 0.6em; display: block; letter-spacing: 5px; margin-top: 4px; }
+
+    /* ═══════════════════════════════════════
+       GRID
+    ═══════════════════════════════════════ */
+    .grid {
+      width: 100%;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+      animation: fadeIn 0.7s ease 0.25s both;
+    }
+
+    @media (min-width: 600px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .span2 { grid-column: 1 / -1; }
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      padding: 20px 20px 18px;
+      position: relative;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .panel:hover {
+      border-color: var(--border-hot);
+      box-shadow: 0 0 20px rgba(0,255,65,0.06), inset 0 0 20px rgba(0,255,65,0.02);
+    }
+
+    .panel-tag {
+      font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+      text-transform: uppercase; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .panel-tag::before {
+      content: '';
+      display: inline-block;
+      width: 20px; height: 1px;
+      background: var(--green-dim);
+    }
+
+    /* ═══════════════════════════════════════
+       LED STATUS
+    ═══════════════════════════════════════ */
+    .status-layout {
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    }
+
+    /* Reticle / target indicator */
+    .reticle {
+      flex-shrink: 0;
+      width: 100px; height: 100px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .reticle-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid var(--green-dim);
+      transition: all 0.5s ease;
+    }
+
+    .ring1 { width: 100%; height: 100%; animation: reticleSpin 12s linear infinite; }
+    .ring2 { width: 70%; height: 70%; animation: reticleSpin 8s linear infinite reverse; opacity: 0.5; }
+
+    .ring1::before, .ring1::after,
+    .ring2::before, .ring2::after {
+      content: '';
+      position: absolute;
+      background: var(--green-dim);
+      border-radius: 2px;
+    }
+    .ring1::before { width: 6px; height: 1px; top: 50%; left: -3px; transform: translateY(-50%); }
+    .ring1::after  { width: 1px; height: 6px; top: -3px; left: 50%; transform: translateX(-50%); }
+    .ring2::before { width: 4px; height: 1px; bottom: 50%; right: -2px; transform: translateY(50%); }
+    .ring2::after  { width: 1px; height: 4px; bottom: -2px; left: 50%; transform: translateX(-50%); }
+
+    .reticle-core {
+      width: 34px; height: 34px;
+      position: relative; z-index: 2;
+      border: 2px solid var(--green-dim);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.5s ease;
+      background: var(--bg);
+    }
+
+    .reticle-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.5s ease;
+    }
+
+    /* LED ON state */
+    .reticle.on .ring1  { border-color: var(--green); animation-duration: 4s; }
+    .reticle.on .ring2  { border-color: rgba(0,255,65,0.4); animation-duration: 2.5s; }
+    .reticle.on .reticle-core {
+      border-color: var(--green);
+      box-shadow: 0 0 14px rgba(0,255,65,0.8), inset 0 0 10px rgba(0,255,65,0.2);
+    }
+    .reticle.on .reticle-dot {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(0,255,65,1), 0 0 20px rgba(0,255,65,0.5);
+      animation: coreFlicker 0.1s step-end infinite;
+    }
+
+    .status-info { flex: 1; min-width: 160px; }
+
+    .status-code {
+      font-family: var(--font-head);
+      font-size: 26px;
+      letter-spacing: 5px;
+      transition: all 0.4s;
+    }
+
+    .status-code.on  { color: var(--green); text-shadow: 0 0 18px rgba(0,255,65,0.6); }
+    .status-code.off { color: var(--text-dim); }
+
+    .status-detail {
+      font-size: 11px; letter-spacing: 1.5px; color: var(--text-dim); margin-top: 6px;
+    }
+
+    /* SIGNAL BARS */
+    .signal-bars {
+      display: flex; align-items: flex-end; gap: 3px; margin-top: 14px;
+    }
+
+    .bar {
+      width: 6px;
+      background: var(--text-dim);
+      border-radius: 1px;
+      transition: background 0.5s, box-shadow 0.5s;
+    }
+
+    .b1 { height: 8px; }  .b2 { height: 12px; } .b3 { height: 17px; }
+    .b4 { height: 22px; } .b5 { height: 28px; }
+
+    .signal-bars.active .bar {
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(0,255,65,0.6);
+    }
+
+    .bar.b1.active-bar { animation: barPop 0.3s ease 0s both; }
+    .bar.b2.active-bar { animation: barPop 0.3s ease 0.05s both; }
+    .bar.b3.active-bar { animation: barPop 0.3s ease 0.1s both; }
+    .bar.b4.active-bar { animation: barPop 0.3s ease 0.15s both; }
+    .bar.b5.active-bar { animation: barPop 0.3s ease 0.2s both; }
+
+    .signal-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-left: 6px; align-self: center; }
+
+    /* ═══════════════════════════════════════
+       THREAT METER (replaces anime)
+    ═══════════════════════════════════════ */
+    .threat-container {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .threat-label {
+      font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase;
+    }
+
+    .threat-bar-wrap {
+      position: relative;
+      height: 22px;
+      background: rgba(0,255,65,0.04);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .threat-fill {
+      height: 100%;
+      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.5s;
+      position: relative;
+    }
+
+    .threat-fill::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: rgba(255,255,255,0.4);
+    }
+
+    .threat-fill.off { width: 15%; background: linear-gradient(90deg, #0a2a10, #1a4a20); }
+    .threat-fill.on  { width: 85%; background: linear-gradient(90deg, #003310, #00aa2b, #00ff41); }
+
+    .threat-pct {
+      position: absolute;
+      right: 6px; top: 50%; transform: translateY(-50%);
+      font-size: 10px; letter-spacing: 1px;
+      transition: color 0.5s;
+    }
+
+    .threat-scanline {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0, transparent 8px, rgba(0,0,0,0.15) 8px, rgba(0,0,0,0.15) 9px);
+      pointer-events: none;
+    }
+
+    /* System status grid */
+    .sys-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+
+    .sys-item {
+      background: var(--bg-cell);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 3px;
+    }
+
+    .sys-item-key {
+      font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase;
+    }
+
+    .sys-item-val {
+      font-family: var(--font-ui);
+      font-size: 18px; font-weight: 700;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    /* ═══════════════════════════════════════
+       CONTROLS
+    ═══════════════════════════════════════ */
+    .ctrl-col {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-cell);
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .toggle-row:hover { border-color: var(--border-hot); }
+
+    .toggle-name { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
+
+    .toggle-switch {
+      width: 50px; height: 24px;
+      background: #0a1a0c;
+      border: 1px solid var(--green-dim);
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.on {
+      background: rgba(0,255,65,0.12);
+      border-color: var(--green);
+      box-shadow: 0 0 10px rgba(0,255,65,0.3);
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: var(--green-dim);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .toggle-switch.on .toggle-knob {
+      left: calc(100% - 19px);
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,65,0.8);
+    }
+
+    /* Buttons */
+    .btn-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+
+    .btn {
+      padding: 13px 10px;
+      border: 1px solid;
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--font-term);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: currentColor;
+      opacity: 0;
+      transform: translateX(-100%) skewX(-8deg);
+      transition: transform 0.3s ease, opacity 0.3s;
+    }
+
+    .btn:hover::before { transform: translateX(0) skewX(-8deg); opacity: 0.08; }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-arm {
+      border-color: var(--green);
+      color: var(--green);
+      text-shadow: 0 0 8px rgba(0,255,65,0.5);
+    }
+
+    .btn-arm:hover {
+      box-shadow: 0 0 16px rgba(0,255,65,0.3);
+      background: rgba(0,255,65,0.05);
+    }
+
+    .btn-kill {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-kill:hover {
+      box-shadow: 0 0 16px rgba(255,45,45,0.25);
+      background: rgba(255,45,45,0.05);
+    }
+
+    /* ═══════════════════════════════════════
+       CONNECTION STATUS
+    ═══════════════════════════════════════ */
+    .conn-row {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    }
+
+    .conn-node {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim);
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-cell);
+    }
+
+    .led-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.4s;
+    }
+
+    .led-dot.live {
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(0,255,65,0.8);
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+
+    .led-dot.err { background: var(--red); }
+
+    /* ═══════════════════════════════════════
+       LOG CONSOLE
+    ═══════════════════════════════════════ */
+    .console-box {
+      background: #000;
+      border: 1px solid var(--border);
+      padding: 2px;
+      height: 150px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--green-dim) transparent;
+    }
+
+    .console-inner {
+      padding: 10px 12px;
+    }
+
+    .log-entry {
+      font-size: 11px;
+      line-height: 1.9;
+      color: var(--text-dim);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .log-entry .ts { color: var(--green-dim); margin-right: 6px; }
+    .log-entry.ok  { color: var(--green); }
+    .log-entry.err { color: var(--red); }
+
+    /* ── Progress sweep ── */
+    .sweep {
+      width: 100%; height: 1px;
+      background: rgba(0,255,65,0.06);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .sweep-fill {
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+      animation: sweepAnim 3s linear infinite;
+    }
+
+    /* ── Footer ── */
+    footer {
+      width: 100%;
+      margin-top: 30px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+      animation: fadeIn 1s ease 0.6s both;
+    }
+
+    /* ── Loading ── */
+    .boot-screen {
+      position: fixed; inset: 0; z-index: 300;
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px;
+      transition: opacity 0.6s ease, visibility 0.6s;
+    }
+
+    .boot-screen.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .boot-logo {
+      font-family: var(--font-head);
+      font-size: 28px; letter-spacing: 8px;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(0,255,65,0.6);
+      text-transform: uppercase;
+      animation: textFlicker 0.08s step-end infinite;
+    }
+
+    .boot-bar-wrap {
+      width: 240px; height: 2px;
+      background: rgba(0,255,65,0.1);
+    }
+
+    .boot-bar {
+      height: 100%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,65,0.8);
+      animation: bootProgress 1.4s ease forwards;
+    }
+
+    .boot-txt {
+      font-size: 10px; letter-spacing: 3px; color: var(--green-dim);
+    }
+
+    /* ═══════════════════════════════════════
+       KEYFRAMES
+    ═══════════════════════════════════════ */
+    @keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideRight  { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+    @keyframes reticleSpin { to { transform: rotate(360deg); } }
+    @keyframes dotPulse    { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes shieldPulse { 0%,100% { box-shadow: 0 0 0 rgba(0,255,65,0); } 50% { box-shadow: 0 0 14px rgba(0,255,65,0.3); } }
+    @keyframes coreFlicker { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    @keyframes barPop      { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); } }
+    @keyframes sweepAnim   { from { transform: translateX(-100%); } to { transform: translateX(200%); } }
+    @keyframes bootProgress{ from { width: 0; } to { width: 100%; } }
+    @keyframes textBlink   { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes textFlicker { 0%,95%,100% { opacity: 1; } 96%,98% { opacity: 0.5; } }
+
+    @media (max-width: 480px) {
+      .btn-grid { grid-template-columns: 1fr; }
+      .sys-grid  { grid-template-columns: 1fr; }
+      .status-layout { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Boot Screen -->
+<div class="boot-screen" id="bootScreen">
+  <div class="boot-logo">SecureNode</div>
+  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+  <div class="boot-txt">INITIALIZING SECURE CHANNEL...</div>
+</div>
+
+<div class="terminal">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="shield-icon"><div class="shield-inner"></div></div>
+      <div class="brand">SECURENODE <span>// v2.1.0</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="sys-tag"><span class="blink">■</span> ARMED</div>
+      <div class="clock" id="liveClock">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="cmd-prefix">&gt; MODULE: device_control.exe</div>
+    <h1>Remote Node<br>Control Terminal
+      <em>// ESP32 · SUPABASE BACKEND</em>
+    </h1>
+  </header>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <!-- LED Status Panel -->
+    <div class="panel span2 bracket-wrap">
+      <span class="br-bl"></span><span class="br-br"></span>
+      <div class="panel-tag">NODE STATUS</div>
+      <div class="status-layout">
+        <!-- Reticle -->
+        <div class="reticle" id="reticle">
+          <div class="reticle-ring ring1"></div>
+          <div class="reticle-ring ring2"></div>
+          <div class="reticle-core">
+            <div class="reticle-dot"></div>
+          </div>
+        </div>
+        <!-- Info -->
+        <div class="status-info">
+          <div class="status-code off" id="statusCode">OFFLINE</div>
+          <div class="status-detail" id="statusDetail">Awaiting Supabase sync...</div>
+          <!-- Signal bars -->
+          <div class="signal-bars" id="signalBars">
+            <div class="bar b1"></div>
+            <div class="bar b2"></div>
+            <div class="bar b3"></div>
+            <div class="bar b4"></div>
+            <div class="bar b5"></div>
+            <span class="signal-label" id="signalLabel">NO SIGNAL</span>
+          </div>
+        </div>
+        <!-- Threat/Activity Meter -->
+        <div class="threat-container" style="flex:1; min-width:160px;">
+          <div class="threat-label">DEVICE ACTIVITY LEVEL</div>
+          <div class="threat-bar-wrap">
+            <div class="threat-fill off" id="threatFill"></div>
+            <div class="threat-scanline"></div>
+            <div class="threat-pct" id="threatPct" style="color:var(--text-dim)">15%</div>
+          </div>
+          <div class="threat-label" id="threatDesc" style="color:var(--text-dim)">STANDBY — LED INACTIVE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="panel">
+      <div class="panel-tag">CONTROLS</div>
+      <div class="ctrl-col">
+        <div class="toggle-row bracket-wrap" onclick="handleToggle()" id="toggleRow">
+          <span class="br-bl"></span><span class="br-br"></span>
+          <span class="toggle-name">LED RELAY</span>
+          <div class="toggle-switch" id="toggleSw">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="btn-grid">
+          <button class="btn btn-arm" onclick="setLed(true)">▶ ACTIVATE</button>
+          <button class="btn btn-kill" onclick="setLed(false)">■ KILL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="panel">
+      <div class="panel-tag">SESSION METRICS</div>
+      <div class="sys-grid">
+        <div class="sys-item">
+          <span class="sys-item-key">Polls</span>
+          <span class="sys-item-val" id="statPoll">000</span>
+        </div>
+        <div class="sys-item">
+          <span class="sys-item-key">Commands</span>
+          <span class="sys-item-val" id="statToggle">000</span>
+        </div>
+        <div class="sys-item" style="grid-column:1/-1;">
+          <span class="sys-item-key">Uptime</span>
+          <span class="sys-item-val" id="statUptime">0s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection -->
+    <div class="panel span2">
+      <div class="panel-tag">NETWORK NODES</div>
+      <div class="conn-row">
+        <div class="conn-node">
+          <div class="led-dot" id="dotSupabase"></div>
+          SUPABASE-DB
+        </div>
+        <div class="conn-node">
+          <div class="led-dot live"></div>
+          DASHBOARD
+        </div>
+        <div class="conn-node">
+          <div class="led-dot" id="dotSync"></div>
+          <span id="syncText">SYNCING...</span>
+        </div>
+      </div>
+      <div class="sweep"><div class="sweep-fill"></div></div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="panel span2">
+      <div class="panel-tag">ACTIVITY LOG</div>
+      <div class="console-box">
+        <div class="console-inner" id="logContainer">
+          <div class="log-entry"><span class="ts">[BOOT]</span> SecureNode terminal loaded.</div>
+          <div class="log-entry"><span class="ts">[INIT]</span> Establishing Supabase connection...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end grid -->
+
+  <footer>
+    <span>ESP32 // SUPABASE BACKEND // ESP-IDF</span>
+    <span>AUTO-REFRESH: 3000ms</span>
+    <span id="footerStatus">STATUS: INIT</span>
+  </footer>
+
+</div><!-- end terminal -->
+
+<script>
+  // ── CONFIG ──────────────────────────────
+  const SUPABASE_URL = "https://aewrhadsjbrklqybjdts.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFld3JoYWRzamJya2xxeWJqZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTMwMDAsImV4cCI6MjA5MDk2OTAwMH0.pZaDW-vAvkQ3hl2Wlf6-F3NW6IvEk9OsAMm_c1lP_3Y";
+  const TABLE        = "led_status";
+  const POLL_MS      = 3000;
+
+  // ── STATE ──────────────────────────────
+  let currentStatus = false;
+  let isUpdating    = false;
+  let pollCount     = 0;
+  let toggleCount   = 0;
+  let startTime     = Date.now();
+
+  // ── DOM ────────────────────────────────
+  const reticle    = document.getElementById('reticle');
+  const statusCode = document.getElementById('statusCode');
+  const statusDet  = document.getElementById('statusDetail');
+  const toggleSw   = document.getElementById('toggleSw');
+  const logCont    = document.getElementById('logContainer');
+  const dotSupa    = document.getElementById('dotSupabase');
+  const dotSync    = document.getElementById('dotSync');
+  const syncTxt    = document.getElementById('syncText');
+  const sigBars    = document.getElementById('signalBars');
+  const sigLabel   = document.getElementById('signalLabel');
+  const threatFill = document.getElementById('threatFill');
+  const threatPct  = document.getElementById('threatPct');
+  const threatDesc = document.getElementById('threatDesc');
+
+  // ── LIVE CLOCK ────────────────────────
+  function tickClock() {
+    document.getElementById('liveClock').textContent =
+      new Date().toLocaleTimeString('en-US', { hour12: false });
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  // ── HELPERS ───────────────────────────
+  const hdrs = () => ({
+    "apikey":        SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type":  "application/json",
+    "Prefer":        "return=minimal"
+  });
+
+  function ts() {
+    return new Date().toLocaleTimeString('en-US', { hour12: false });
+  }
+
+  function addLog(msg, type = '') {
+    const el = document.createElement('div');
+    el.className = 'log-entry ' + type;
+    el.innerHTML = `<span class="ts">[${ts()}]</span> ${msg}`;
+    logCont.appendChild(el);
+    logCont.parentElement.scrollTop = logCont.parentElement.scrollHeight;
+    while (logCont.children.length > 30) logCont.removeChild(logCont.firstChild);
+  }
+
+  function updateUI(status) {
+    currentStatus = status;
+
+    if (status) {
+      reticle.classList.add('on');
+      statusCode.textContent  = 'ONLINE';
+      statusCode.className    = 'status-code on';
+      statusDet.textContent   = 'Built-in LED node is ACTIVE';
+      toggleSw.classList.add('on');
+      sigBars.classList.add('active');
+      sigLabel.textContent    = 'SIGNAL OK';
+      threatFill.className    = 'threat-fill on';
+      threatPct.textContent   = '85%';
+      threatPct.style.color   = 'var(--green)';
+      threatDesc.textContent  = 'ACTIVE — LED NODE BROADCASTING';
+      threatDesc.style.color  = 'var(--green)';
+      document.getElementById('footerStatus').textContent = 'STATUS: ARMED';
+    } else {
+      reticle.classList.remove('on');
+      statusCode.textContent  = 'STANDBY';
+      statusCode.className    = 'status-code off';
+      statusDet.textContent   = 'Built-in LED node is INACTIVE';
+      toggleSw.classList.remove('on');
+      sigBars.classList.remove('active');
+      sigLabel.textContent    = 'NO SIGNAL';
+      threatFill.className    = 'threat-fill off';
+      threatPct.textContent   = '15%';
+      threatPct.style.color   = 'var(--text-dim)';
+      threatDesc.textContent  = 'STANDBY — LED INACTIVE';
+      threatDesc.style.color  = 'var(--text-dim)';
+      document.getElementById('footerStatus').textContent = 'STATUS: STANDBY';
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('statPoll').textContent    = String(pollCount).padStart(3,'0');
+    document.getElementById('statToggle').textContent  = String(toggleCount).padStart(3,'0');
+    const e = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById('statUptime').textContent  =
+      e >= 60 ? `${Math.floor(e/60)}m ${e%60}s` : `${e}s`;
+  }
+
+  // ── FETCH STATUS ──────────────────────
+  async function fetchStatus() {
+    dotSync.className = 'led-dot';
+    syncTxt.textContent = 'POLLING...';
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABLE}?id=eq.1&select=led_status`,
+        { headers: hdrs() }
+      );
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      const status = d[0]?.led_status ?? false;
+      pollCount++;
+      updateUI(status);
+      updateStats();
+      dotSupa.className = 'led-dot live';
+      dotSync.className = 'led-dot live';
+      syncTxt.textContent = `SYNCED ${ts()}`;
+    } catch (e) {
+      dotSync.className = 'led-dot err';
+      dotSupa.className = 'led-dot err';
+      syncTxt.textContent = 'LINK FAILURE';
+      addLog(`[ERR] Fetch failed: ${e.message}`, 'err');
+    }
+  }
+
+  // ── SET LED ───────────────────────────
+  async function setLed(val) {
+    if (isUpdating) return;
+    isUpdating = true;
+    addLog(`CMD → led_status = ${val ? 'TRUE' : 'FALSE'}`);
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABLE}?id=eq.1`,
+        { method: 'PATCH', headers: hdrs(), body: JSON.stringify({ led_status: val }) }
+      );
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      toggleCount++;
+      updateUI(val);
+      updateStats();
+      addLog(`ACK → LED ${val ? 'ACTIVATED' : 'TERMINATED'} ✓`, 'ok');
+    } catch (e) {
+      addLog(`[ERR] Command failed: ${e.message}`, 'err');
+    } finally {
+      isUpdating = false;
+    }
+  }
+
+  function handleToggle() { setLed(!currentStatus); }
+
+  // ── INIT ─────────────────────────────
+  async function init() {
+    addLog('Handshake with Supabase endpoint...');
+    await fetchStatus();
+    addLog('Connection established. Polling active.', 'ok');
+    document.getElementById('bootScreen').classList.add('gone');
+    setInterval(fetchStatus, POLL_MS);
+    setInterval(updateStats, 1000);
+  }
+
+  init();
+</script>
+</body>
+</html>
