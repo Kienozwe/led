@@ -28,7 +28,6 @@
 
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-term); overflow-x: hidden; }
 
-    /* ── SCAN LINES ── */
     body::before {
       content: '';
       position: fixed; inset: 0; z-index: 200;
@@ -42,7 +41,6 @@
       pointer-events: none;
     }
 
-    /* ── RADIAL VIGNETTE ── */
     body::after {
       content: '';
       position: fixed; inset: 0; z-index: 0;
@@ -50,10 +48,7 @@
       pointer-events: none;
     }
 
-    /* ── CORNER BRACKETS ── */
-    .bracket-wrap {
-      position: relative;
-    }
+    .bracket-wrap { position: relative; }
     .bracket-wrap::before, .bracket-wrap::after,
     .bracket-wrap > .br-bl, .bracket-wrap > .br-br {
       content: '';
@@ -68,9 +63,6 @@
     .bracket-wrap > .br-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
     .bracket-wrap > .br-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
 
-    /* ═══════════════════════════════════════
-       LAYOUT
-    ═══════════════════════════════════════ */
     .terminal {
       position: relative; z-index: 1;
       min-height: 100vh;
@@ -79,9 +71,6 @@
       max-width: 780px; margin: 0 auto;
     }
 
-    /* ═══════════════════════════════════════
-       TOP BAR
-    ═══════════════════════════════════════ */
     .topbar {
       width: 100%;
       display: flex; align-items: center; justify-content: space-between;
@@ -91,9 +80,7 @@
       animation: fadeIn 0.5s ease both;
     }
 
-    .topbar-left {
-      display: flex; align-items: center; gap: 12px;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
 
     .shield-icon {
       width: 34px; height: 34px;
@@ -118,7 +105,6 @@
       text-shadow: 0 0 12px rgba(0,255,65,0.5);
       text-transform: uppercase;
     }
-
     .brand span { color: var(--text-dim); font-size: 13px; }
 
     .topbar-right {
@@ -132,14 +118,9 @@
       padding: 4px 10px;
       font-size: 10px;
     }
-
     .sys-tag .blink { animation: textBlink 1.2s step-end infinite; }
-
     .clock { font-size: 12px; color: var(--green-dim); letter-spacing: 2px; }
 
-    /* ═══════════════════════════════════════
-       HEADER
-    ═══════════════════════════════════════ */
     header {
       width: 100%;
       text-align: left;
@@ -147,9 +128,7 @@
       animation: slideRight 0.6s ease 0.1s both;
     }
 
-    .cmd-prefix {
-      font-size: 11px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 6px;
-    }
+    .cmd-prefix { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 6px; }
 
     h1 {
       font-family: var(--font-head);
@@ -160,12 +139,8 @@
       text-shadow: 0 0 30px rgba(0,255,65,0.4);
       line-height: 1.15;
     }
-
     h1 em { color: var(--text-dim); font-style: normal; font-size: 0.6em; display: block; letter-spacing: 5px; margin-top: 4px; }
 
-    /* ═══════════════════════════════════════
-       GRID
-    ═══════════════════════════════════════ */
     .grid {
       width: 100%;
       display: grid;
@@ -179,7 +154,6 @@
       .span2 { grid-column: 1 / -1; }
     }
 
-    /* ── PANEL ── */
     .panel {
       background: var(--bg-panel);
       border: 1px solid var(--border);
@@ -187,7 +161,6 @@
       position: relative;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
-
     .panel:hover {
       border-color: var(--border-hot);
       box-shadow: 0 0 20px rgba(0,255,65,0.06), inset 0 0 20px rgba(0,255,65,0.02);
@@ -198,7 +171,6 @@
       text-transform: uppercase; margin-bottom: 16px;
       display: flex; align-items: center; gap: 8px;
     }
-
     .panel-tag::before {
       content: '';
       display: inline-block;
@@ -206,14 +178,9 @@
       background: var(--green-dim);
     }
 
-    /* ═══════════════════════════════════════
-       LED STATUS
-    ═══════════════════════════════════════ */
-    .status-layout {
-      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-    }
+    /* ── LED STATUS ── */
+    .status-layout { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 
-    /* Reticle / target indicator */
     .reticle {
       flex-shrink: 0;
       width: 100px; height: 100px;
@@ -227,7 +194,6 @@
       border: 1px solid var(--green-dim);
       transition: all 0.5s ease;
     }
-
     .ring1 { width: 100%; height: 100%; animation: reticleSpin 12s linear infinite; }
     .ring2 { width: 70%; height: 70%; animation: reticleSpin 8s linear infinite reverse; opacity: 0.5; }
 
@@ -236,408 +202,235 @@
       content: '';
       position: absolute;
       background: var(--green-dim);
-      border-radius: 2px;
     }
-    .ring1::before { width: 6px; height: 1px; top: 50%; left: -3px; transform: translateY(-50%); }
-    .ring1::after  { width: 1px; height: 6px; top: -3px; left: 50%; transform: translateX(-50%); }
-    .ring2::before { width: 4px; height: 1px; bottom: 50%; right: -2px; transform: translateY(50%); }
-    .ring2::after  { width: 1px; height: 4px; bottom: -2px; left: 50%; transform: translateX(-50%); }
+    .ring1::before { width: 6px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+    .ring1::after  { width: 6px; height: 1px; top: 50%; right: 0; transform: translateY(-50%); }
+    .ring2::before { width: 1px; height: 6px; top: 0; left: 50%; transform: translateX(-50%); }
+    .ring2::after  { width: 1px; height: 6px; bottom: 0; left: 50%; transform: translateX(-50%); }
 
     .reticle-core {
-      width: 34px; height: 34px;
-      position: relative; z-index: 2;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,170,43,0.15);
       border: 2px solid var(--green-dim);
-      border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.5s ease;
-      background: var(--bg);
+      transition: all 0.4s ease;
+      position: relative; z-index: 1;
     }
-
-    .reticle-dot {
-      width: 12px; height: 12px;
+    .reticle-core::after {
+      content: '';
+      width: 10px; height: 10px;
       border-radius: 50%;
-      background: var(--text-dim);
-      transition: all 0.5s ease;
+      background: var(--green-dim);
+      transition: all 0.4s ease;
     }
 
-    /* LED ON state */
-    .reticle.on .ring1  { border-color: var(--green); animation-duration: 4s; }
-    .reticle.on .ring2  { border-color: rgba(0,255,65,0.4); animation-duration: 2.5s; }
-    .reticle.on .reticle-core {
+    #reticle.on .reticle-ring { border-color: var(--green); }
+    #reticle.on .reticle-core {
+      background: rgba(0,255,65,0.25);
       border-color: var(--green);
-      box-shadow: 0 0 14px rgba(0,255,65,0.8), inset 0 0 10px rgba(0,255,65,0.2);
+      box-shadow: 0 0 20px rgba(0,255,65,0.6);
     }
-    .reticle.on .reticle-dot {
+    #reticle.on .reticle-core::after {
       background: var(--green);
-      box-shadow: 0 0 10px rgba(0,255,65,1), 0 0 20px rgba(0,255,65,0.5);
-      animation: coreFlicker 0.1s step-end infinite;
+      box-shadow: 0 0 10px var(--green);
     }
 
-    .status-info { flex: 1; min-width: 160px; }
-
+    .status-text { flex: 1; min-width: 120px; }
+    .status-label { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 6px; }
     .status-code {
       font-family: var(--font-head);
-      font-size: 26px;
-      letter-spacing: 5px;
-      transition: all 0.4s;
+      font-size: 28px;
+      letter-spacing: 4px;
+      transition: color 0.4s, text-shadow 0.4s;
     }
+    .status-code.on  { color: var(--green); text-shadow: 0 0 20px rgba(0,255,65,0.5); }
+    .status-code.off { color: var(--text-dim); text-shadow: none; }
+    .status-detail { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-top: 6px; }
 
-    .status-code.on  { color: var(--green); text-shadow: 0 0 18px rgba(0,255,65,0.6); }
-    .status-code.off { color: var(--text-dim); }
-
-    .status-detail {
-      font-size: 11px; letter-spacing: 1.5px; color: var(--text-dim); margin-top: 6px;
-    }
-
-    /* SIGNAL BARS */
-    .signal-bars {
-      display: flex; align-items: flex-end; gap: 3px; margin-top: 14px;
-    }
-
-    .bar {
+    /* ── SIGNAL BARS ── */
+    .signal-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .signal-bars { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+    .signal-bars .bar {
       width: 6px;
       background: var(--text-dim);
       border-radius: 1px;
-      transition: background 0.5s, box-shadow 0.5s;
+      transition: background 0.4s, box-shadow 0.4s;
     }
-
-    .b1 { height: 8px; }  .b2 { height: 12px; } .b3 { height: 17px; }
-    .b4 { height: 22px; } .b5 { height: 28px; }
-
+    .signal-bars .bar:nth-child(1) { height: 35%; }
+    .signal-bars .bar:nth-child(2) { height: 55%; }
+    .signal-bars .bar:nth-child(3) { height: 75%; }
+    .signal-bars .bar:nth-child(4) { height: 100%; }
     .signal-bars.active .bar {
       background: var(--green);
-      box-shadow: 0 0 6px rgba(0,255,65,0.6);
+      box-shadow: 0 0 6px rgba(0,255,65,0.5);
     }
+    .signal-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); }
 
-    .bar.b1.active-bar { animation: barPop 0.3s ease 0s both; }
-    .bar.b2.active-bar { animation: barPop 0.3s ease 0.05s both; }
-    .bar.b3.active-bar { animation: barPop 0.3s ease 0.1s both; }
-    .bar.b4.active-bar { animation: barPop 0.3s ease 0.15s both; }
-    .bar.b5.active-bar { animation: barPop 0.3s ease 0.2s both; }
-
-    .signal-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-left: 6px; align-self: center; }
-
-    /* ═══════════════════════════════════════
-       THREAT METER (replaces anime)
-    ═══════════════════════════════════════ */
-    .threat-container {
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .threat-label {
-      font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase;
-    }
-
-    .threat-bar-wrap {
-      position: relative;
-      height: 22px;
-      background: rgba(0,255,65,0.04);
+    /* ── THREAT METER ── */
+    .threat-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .threat-bar-outer {
+      height: 6px;
+      background: var(--bg-cell);
       border: 1px solid var(--border);
+      border-radius: 3px;
       overflow: hidden;
     }
-
     .threat-fill {
       height: 100%;
-      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.5s;
-      position: relative;
+      width: 15%;
+      border-radius: 3px;
+      transition: width 0.6s ease, background 0.4s;
     }
+    .threat-fill.on  { width: 85%; background: var(--green); box-shadow: 0 0 8px rgba(0,255,65,0.5); }
+    .threat-fill.off { width: 15%; background: var(--text-dim); }
+    .threat-meta { display: flex; justify-content: space-between; align-items: center; }
+    .threat-pct  { font-size: 18px; font-family: var(--font-head); color: var(--text-dim); transition: color 0.4s; }
+    .threat-desc { font-size: 9px; letter-spacing: 1.5px; color: var(--text-dim); transition: color 0.4s; }
 
-    .threat-fill::after {
-      content: '';
-      position: absolute;
-      right: 0; top: 0; bottom: 0;
-      width: 2px;
-      background: rgba(255,255,255,0.4);
-    }
-
-    .threat-fill.off { width: 15%; background: linear-gradient(90deg, #0a2a10, #1a4a20); }
-    .threat-fill.on  { width: 85%; background: linear-gradient(90deg, #003310, #00aa2b, #00ff41); }
-
-    .threat-pct {
-      position: absolute;
-      right: 6px; top: 50%; transform: translateY(-50%);
-      font-size: 10px; letter-spacing: 1px;
-      transition: color 0.5s;
-    }
-
-    .threat-scanline {
-      position: absolute; inset: 0;
-      background: repeating-linear-gradient(90deg, transparent 0, transparent 8px, rgba(0,0,0,0.15) 8px, rgba(0,0,0,0.15) 9px);
-      pointer-events: none;
-    }
-
-    /* System status grid */
-    .sys-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    }
-
-    .sys-item {
-      background: var(--bg-cell);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      display: flex; flex-direction: column; gap: 3px;
-    }
-
-    .sys-item-key {
-      font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase;
-    }
-
-    .sys-item-val {
-      font-family: var(--font-ui);
-      font-size: 18px; font-weight: 700;
-      color: var(--green);
-      letter-spacing: 1px;
-    }
-
-    /* ═══════════════════════════════════════
-       CONTROLS
-    ═══════════════════════════════════════ */
-    .ctrl-col {
-      display: flex; flex-direction: column; gap: 14px;
-    }
-
-    /* Toggle */
+    /* ── TOGGLE / BUTTONS ── */
+    .control-wrap { display: flex; flex-direction: column; gap: 16px; }
     .toggle-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 14px;
+      cursor: pointer; padding: 10px 14px;
       border: 1px solid var(--border);
       background: var(--bg-cell);
-      cursor: pointer;
       transition: border-color 0.3s;
     }
-
     .toggle-row:hover { border-color: var(--border-hot); }
-
-    .toggle-name { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
+    .toggle-label { font-size: 11px; letter-spacing: 2px; }
 
     .toggle-switch {
-      width: 50px; height: 24px;
-      background: #0a1a0c;
+      width: 52px; height: 26px;
+      background: var(--bg);
       border: 1px solid var(--green-dim);
+      border-radius: 13px;
       position: relative;
-      transition: all 0.3s;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+      cursor: pointer;
     }
-
     .toggle-switch.on {
       background: rgba(0,255,65,0.12);
       border-color: var(--green);
-      box-shadow: 0 0 10px rgba(0,255,65,0.3);
+      box-shadow: 0 0 12px rgba(0,255,65,0.3);
     }
-
     .toggle-knob {
       position: absolute;
       top: 3px; left: 3px;
-      width: 16px; height: 16px;
-      background: var(--green-dim);
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .toggle-switch.on .toggle-knob {
-      left: calc(100% - 19px);
-      background: var(--green);
-      box-shadow: 0 0 8px rgba(0,255,65,0.8);
-    }
-
-    /* Buttons */
-    .btn-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    }
-
-    .btn {
-      padding: 13px 10px;
-      border: 1px solid;
-      background: transparent;
-      cursor: pointer;
-      font-family: var(--font-term);
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s;
-      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: currentColor;
-      opacity: 0;
-      transform: translateX(-100%) skewX(-8deg);
-      transition: transform 0.3s ease, opacity 0.3s;
-    }
-
-    .btn:hover::before { transform: translateX(0) skewX(-8deg); opacity: 0.08; }
-    .btn:active { transform: scale(0.97); }
-
-    .btn-arm {
-      border-color: var(--green);
-      color: var(--green);
-      text-shadow: 0 0 8px rgba(0,255,65,0.5);
-    }
-
-    .btn-arm:hover {
-      box-shadow: 0 0 16px rgba(0,255,65,0.3);
-      background: rgba(0,255,65,0.05);
-    }
-
-    .btn-kill {
-      border-color: var(--red);
-      color: var(--red);
-    }
-
-    .btn-kill:hover {
-      box-shadow: 0 0 16px rgba(255,45,45,0.25);
-      background: rgba(255,45,45,0.05);
-    }
-
-    /* ═══════════════════════════════════════
-       CONNECTION STATUS
-    ═══════════════════════════════════════ */
-    .conn-row {
-      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-    }
-
-    .conn-node {
-      display: flex; align-items: center; gap: 7px;
-      font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim);
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-cell);
-    }
-
-    .led-dot {
-      width: 7px; height: 7px;
+      width: 18px; height: 18px;
       border-radius: 50%;
-      background: var(--text-dim);
-      transition: all 0.4s;
+      background: var(--green-dim);
+      transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
     }
-
-    .led-dot.live {
+    .toggle-switch.on .toggle-knob {
+      transform: translateX(26px);
       background: var(--green);
-      box-shadow: 0 0 6px rgba(0,255,65,0.8);
-      animation: dotPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 8px rgba(0,255,65,0.6);
     }
 
-    .led-dot.err { background: var(--red); }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn {
+      padding: 10px 0;
+      font-family: var(--font-term);
+      font-size: 12px;
+      letter-spacing: 2px;
+      border: 1px solid;
+      background: var(--bg-cell);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-arm  { color: var(--green); border-color: var(--green-dim); }
+    .btn-arm:hover  { background: rgba(0,255,65,0.1); border-color: var(--green); box-shadow: 0 0 14px rgba(0,255,65,0.2); }
+    .btn-kill { color: var(--red);   border-color: rgba(255,45,45,0.4); }
+    .btn-kill:hover { background: rgba(255,45,45,0.08); border-color: var(--red); box-shadow: 0 0 14px rgba(255,45,45,0.2); }
 
-    /* ═══════════════════════════════════════
-       LOG CONSOLE
-    ═══════════════════════════════════════ */
+    /* ── SYS GRID ── */
+    .sys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sys-item { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: var(--bg-cell); border: 1px solid var(--border); }
+    .sys-item-key { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); }
+    .sys-item-val { font-size: 18px; font-family: var(--font-head); color: var(--green); letter-spacing: 2px; }
+
+    /* ── CONN ROW ── */
+    .conn-row { display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+    .conn-node { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 2px; }
+    .led-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); transition: all 0.4s; }
+    .led-dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); animation: dotPulse 1.5s ease-in-out infinite; }
+    .led-dot.err  { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+
+    .sweep { height: 2px; background: var(--bg-cell); border-radius: 1px; overflow: hidden; }
+    .sweep-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(to right, transparent, var(--green), transparent);
+      animation: sweep 3s ease-in-out infinite;
+    }
+
+    /* ── CONSOLE ── */
     .console-box {
-      background: #000;
+      background: var(--bg-cell);
       border: 1px solid var(--border);
-      padding: 2px;
-      height: 150px;
+      height: 160px;
       overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--green-dim) transparent;
-    }
-
-    .console-inner {
       padding: 10px 12px;
     }
+    .console-box::-webkit-scrollbar { width: 4px; }
+    .console-box::-webkit-scrollbar-track { background: transparent; }
+    .console-box::-webkit-scrollbar-thumb { background: var(--green-dim); }
 
-    .log-entry {
-      font-size: 11px;
-      line-height: 1.9;
-      color: var(--text-dim);
-      animation: fadeIn 0.2s ease;
-    }
-
+    .log-entry { font-size: 11px; line-height: 1.8; color: var(--text-dim); }
     .log-entry .ts { color: var(--green-dim); margin-right: 6px; }
     .log-entry.ok  { color: var(--green); }
     .log-entry.err { color: var(--red); }
 
-    /* ── Progress sweep ── */
-    .sweep {
-      width: 100%; height: 1px;
-      background: rgba(0,255,65,0.06);
-      margin-top: 6px;
-      overflow: hidden;
-    }
-    .sweep-fill {
-      height: 100%;
-      background: linear-gradient(90deg, transparent, var(--green), transparent);
-      animation: sweepAnim 3s linear infinite;
-    }
-
-    /* ── Footer ── */
-    footer {
-      width: 100%;
-      margin-top: 30px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-      font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
-      animation: fadeIn 1s ease 0.6s both;
-    }
-
-    /* ── Loading ── */
-    .boot-screen {
+    /* ── BOOT SCREEN ── */
+    #bootScreen {
       position: fixed; inset: 0; z-index: 300;
-      background: #000;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 14px;
-      transition: opacity 0.6s ease, visibility 0.6s;
+      background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px;
+      transition: opacity 0.5s ease;
     }
-
-    .boot-screen.gone { opacity: 0; visibility: hidden; pointer-events: none; }
-
+    #bootScreen.gone { opacity: 0; pointer-events: none; }
     .boot-logo {
       font-family: var(--font-head);
-      font-size: 28px; letter-spacing: 8px;
+      font-size: 32px;
+      letter-spacing: 6px;
       color: var(--green);
-      text-shadow: 0 0 30px rgba(0,255,65,0.6);
-      text-transform: uppercase;
-      animation: textFlicker 0.08s step-end infinite;
+      text-shadow: 0 0 30px rgba(0,255,65,0.4);
+    }
+    .boot-bar-outer { width: 240px; height: 3px; background: var(--bg-cell); border: 1px solid var(--border); }
+    .boot-bar-fill  { height: 100%; width: 0; background: var(--green); animation: bootLoad 1.6s ease forwards; }
+    .boot-msg { font-size: 10px; letter-spacing: 3px; color: var(--text-dim); }
+
+    footer {
+      width: 100%;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+      margin-top: 28px;
+      font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
     }
 
-    .boot-bar-wrap {
-      width: 240px; height: 2px;
-      background: rgba(0,255,65,0.1);
-    }
-
-    .boot-bar {
-      height: 100%;
-      background: var(--green);
-      box-shadow: 0 0 8px rgba(0,255,65,0.8);
-      animation: bootProgress 1.4s ease forwards;
-    }
-
-    .boot-txt {
-      font-size: 10px; letter-spacing: 3px; color: var(--green-dim);
-    }
-
-    /* ═══════════════════════════════════════
-       KEYFRAMES
-    ═══════════════════════════════════════ */
-    @keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideRight  { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
-    @keyframes reticleSpin { to { transform: rotate(360deg); } }
-    @keyframes dotPulse    { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-    @keyframes shieldPulse { 0%,100% { box-shadow: 0 0 0 rgba(0,255,65,0); } 50% { box-shadow: 0 0 14px rgba(0,255,65,0.3); } }
-    @keyframes coreFlicker { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-    @keyframes barPop      { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); } }
-    @keyframes sweepAnim   { from { transform: translateX(-100%); } to { transform: translateX(200%); } }
-    @keyframes bootProgress{ from { width: 0; } to { width: 100%; } }
-    @keyframes textBlink   { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-    @keyframes textFlicker { 0%,95%,100% { opacity: 1; } 96%,98% { opacity: 0.5; } }
-
-    @media (max-width: 480px) {
-      .btn-grid { grid-template-columns: 1fr; }
-      .sys-grid  { grid-template-columns: 1fr; }
-      .status-layout { justify-content: center; }
-    }
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn     { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes slideRight { from { opacity: 0; transform: translateX(-14px) } to { opacity: 1; transform: none } }
+    @keyframes reticleSpin { to { transform: rotate(360deg) } }
+    @keyframes shieldPulse { 0%,100% { box-shadow: 0 0 0 rgba(0,255,65,0) } 50% { box-shadow: 0 0 16px rgba(0,255,65,0.3) } }
+    @keyframes textBlink  { 0%,100% { opacity:1 } 50% { opacity:0 } }
+    @keyframes dotPulse   { 0%,100% { box-shadow: 0 0 4px var(--green) } 50% { box-shadow: 0 0 12px var(--green) } }
+    @keyframes sweep      { 0% { width: 0; margin-left: 0 } 50% { width: 60%; margin-left: 40% } 100% { width: 0; margin-left: 100% } }
+    @keyframes bootLoad   { 0% { width: 0 } 100% { width: 100% } }
   </style>
 </head>
 <body>
 
 <!-- Boot Screen -->
-<div class="boot-screen" id="bootScreen">
-  <div class="boot-logo">SecureNode</div>
-  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
-  <div class="boot-txt">INITIALIZING SECURE CHANNEL...</div>
+<div id="bootScreen">
+  <div class="boot-logo">SECURENODE</div>
+  <div class="boot-bar-outer"><div class="boot-bar-fill"></div></div>
+  <div class="boot-msg">INITIALIZING SECURE CHANNEL...</div>
 </div>
 
 <div class="terminal">
@@ -646,72 +439,68 @@
   <div class="topbar">
     <div class="topbar-left">
       <div class="shield-icon"><div class="shield-inner"></div></div>
-      <div class="brand">SECURENODE <span>// v2.1.0</span></div>
+      <div class="brand">SecureNode <span>// IoT CTRL</span></div>
     </div>
     <div class="topbar-right">
-      <div class="sys-tag"><span class="blink">■</span> ARMED</div>
+      <div class="sys-tag"><span class="blink">●</span> LIVE</div>
       <div class="clock" id="liveClock">00:00:00</div>
     </div>
   </div>
 
   <!-- Header -->
   <header>
-    <div class="cmd-prefix">&gt; MODULE: device_control.exe</div>
-    <h1>Remote Node<br>Control Terminal
-      <em>// ESP32 · SUPABASE BACKEND</em>
-    </h1>
+    <div class="cmd-prefix">root@esp32 ~ $</div>
+    <h1>Device Control<em>// Supabase Real-Time Backend</em></h1>
   </header>
 
   <!-- Grid -->
   <div class="grid">
 
-    <!-- LED Status Panel -->
+    <!-- LED Status -->
     <div class="panel span2 bracket-wrap">
-      <span class="br-bl"></span><span class="br-br"></span>
+      <div class="br-bl"></div><div class="br-br"></div>
       <div class="panel-tag">NODE STATUS</div>
       <div class="status-layout">
-        <!-- Reticle -->
         <div class="reticle" id="reticle">
           <div class="reticle-ring ring1"></div>
           <div class="reticle-ring ring2"></div>
-          <div class="reticle-core">
-            <div class="reticle-dot"></div>
-          </div>
+          <div class="reticle-core"></div>
         </div>
-        <!-- Info -->
-        <div class="status-info">
-          <div class="status-code off" id="statusCode">OFFLINE</div>
-          <div class="status-detail" id="statusDetail">Awaiting Supabase sync...</div>
-          <!-- Signal bars -->
+        <div class="status-text">
+          <div class="status-label">CURRENT STATE</div>
+          <div class="status-code off" id="statusCode">STANDBY</div>
+          <div class="status-detail" id="statusDetail">Built-in LED node is INACTIVE</div>
+        </div>
+        <div class="signal-wrap">
           <div class="signal-bars" id="signalBars">
-            <div class="bar b1"></div>
-            <div class="bar b2"></div>
-            <div class="bar b3"></div>
-            <div class="bar b4"></div>
-            <div class="bar b5"></div>
-            <span class="signal-label" id="signalLabel">NO SIGNAL</span>
+            <div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div>
           </div>
-        </div>
-        <!-- Threat/Activity Meter -->
-        <div class="threat-container" style="flex:1; min-width:160px;">
-          <div class="threat-label">DEVICE ACTIVITY LEVEL</div>
-          <div class="threat-bar-wrap">
-            <div class="threat-fill off" id="threatFill"></div>
-            <div class="threat-scanline"></div>
-            <div class="threat-pct" id="threatPct" style="color:var(--text-dim)">15%</div>
-          </div>
-          <div class="threat-label" id="threatDesc" style="color:var(--text-dim)">STANDBY — LED INACTIVE</div>
+          <div class="signal-label" id="signalLabel">NO SIGNAL</div>
         </div>
       </div>
     </div>
 
-    <!-- Controls Panel -->
+    <!-- Threat Meter -->
     <div class="panel">
-      <div class="panel-tag">CONTROLS</div>
-      <div class="ctrl-col">
-        <div class="toggle-row bracket-wrap" onclick="handleToggle()" id="toggleRow">
-          <span class="br-bl"></span><span class="br-br"></span>
-          <span class="toggle-name">LED RELAY</span>
+      <div class="panel-tag">OUTPUT LEVEL</div>
+      <div class="threat-wrap">
+        <div class="threat-bar-outer">
+          <div class="threat-fill off" id="threatFill"></div>
+        </div>
+        <div class="threat-meta">
+          <div class="threat-pct" id="threatPct">15%</div>
+          <div class="threat-desc" id="threatDesc">STANDBY — LED INACTIVE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="panel">
+      <div class="panel-tag">COMMAND INTERFACE</div>
+      <div class="control-wrap">
+        <div class="toggle-row" onclick="handleToggle()">
+          <span class="toggle-label">LED POWER</span>
           <div class="toggle-switch" id="toggleSw">
             <div class="toggle-knob"></div>
           </div>
@@ -784,20 +573,23 @@
 </div><!-- end terminal -->
 
 <script>
-  // ── CONFIG ──────────────────────────────
+  // ── CONFIG ──────────────────────────────────────────────────────────
   const SUPABASE_URL = "https://aewrhadsjbrklqybjdts.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFld3JoYWRzamJya2xxeWJqZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTMwMDAsImV4cCI6MjA5MDk2OTAwMH0.pZaDW-vAvkQ3hl2Wlf6-F3NW6IvEk9OsAMm_c1lP_3Y";
-  const TABLE        = "led_status";
-  const POLL_MS      = 3000;
 
-  // ── STATE ──────────────────────────────
+  // ✅ FIX: Use just the table name — NOT "public.device_control"
+  //        The schema prefix causes a 404 on Supabase REST API.
+  const TABLE   = "device_control";
+  const POLL_MS = 3000;
+
+  // ── STATE ───────────────────────────────────────────────────────────
   let currentStatus = false;
   let isUpdating    = false;
   let pollCount     = 0;
   let toggleCount   = 0;
   let startTime     = Date.now();
 
-  // ── DOM ────────────────────────────────
+  // ── DOM ─────────────────────────────────────────────────────────────
   const reticle    = document.getElementById('reticle');
   const statusCode = document.getElementById('statusCode');
   const statusDet  = document.getElementById('statusDetail');
@@ -812,14 +604,14 @@
   const threatPct  = document.getElementById('threatPct');
   const threatDesc = document.getElementById('threatDesc');
 
-  // ── LIVE CLOCK ────────────────────────
+  // ── LIVE CLOCK ──────────────────────────────────────────────────────
   function tickClock() {
     document.getElementById('liveClock').textContent =
       new Date().toLocaleTimeString('en-US', { hour12: false });
   }
   setInterval(tickClock, 1000); tickClock();
 
-  // ── HELPERS ───────────────────────────
+  // ── HELPERS ─────────────────────────────────────────────────────────
   const hdrs = () => ({
     "apikey":        SUPABASE_KEY,
     "Authorization": `Bearer ${SUPABASE_KEY}`,
@@ -842,7 +634,6 @@
 
   function updateUI(status) {
     currentStatus = status;
-
     if (status) {
       reticle.classList.add('on');
       statusCode.textContent  = 'ONLINE';
@@ -875,16 +666,16 @@
   }
 
   function updateStats() {
-    document.getElementById('statPoll').textContent    = String(pollCount).padStart(3,'0');
-    document.getElementById('statToggle').textContent  = String(toggleCount).padStart(3,'0');
+    document.getElementById('statPoll').textContent   = String(pollCount).padStart(3,'0');
+    document.getElementById('statToggle').textContent = String(toggleCount).padStart(3,'0');
     const e = Math.floor((Date.now() - startTime) / 1000);
-    document.getElementById('statUptime').textContent  =
+    document.getElementById('statUptime').textContent =
       e >= 60 ? `${Math.floor(e/60)}m ${e%60}s` : `${e}s`;
   }
 
-  // ── FETCH STATUS ──────────────────────
+  // ── FETCH STATUS ────────────────────────────────────────────────────
   async function fetchStatus() {
-    dotSync.className = 'led-dot';
+    dotSync.className   = 'led-dot';
     syncTxt.textContent = 'POLLING...';
     try {
       const r = await fetch(
@@ -897,18 +688,18 @@
       pollCount++;
       updateUI(status);
       updateStats();
-      dotSupa.className = 'led-dot live';
-      dotSync.className = 'led-dot live';
+      dotSupa.className   = 'led-dot live';
+      dotSync.className   = 'led-dot live';
       syncTxt.textContent = `SYNCED ${ts()}`;
     } catch (e) {
-      dotSync.className = 'led-dot err';
-      dotSupa.className = 'led-dot err';
+      dotSync.className   = 'led-dot err';
+      dotSupa.className   = 'led-dot err';
       syncTxt.textContent = 'LINK FAILURE';
       addLog(`[ERR] Fetch failed: ${e.message}`, 'err');
     }
   }
 
-  // ── SET LED ───────────────────────────
+  // ── SET LED ─────────────────────────────────────────────────────────
   async function setLed(val) {
     if (isUpdating) return;
     isUpdating = true;
@@ -932,7 +723,7 @@
 
   function handleToggle() { setLed(!currentStatus); }
 
-  // ── INIT ─────────────────────────────
+  // ── INIT ────────────────────────────────────────────────────────────
   async function init() {
     addLog('Handshake with Supabase endpoint...');
     await fetchStatus();

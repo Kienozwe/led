@@ -2,8 +2,8 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-const char* WIFI_SSID     = "Joshua-2.4G";
-const char* WIFI_PASSWORD = "joshua762002";
+const char* WIFI_SSID     = "Salalima wifi 4G";
+const char* WIFI_PASSWORD = "salalima424";
 
 const char* SUPABASE_URL = "https://aewrhadsjbrklqybjdts.supabase.co";
 const char* SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFld3JoYWRzamJya2xxeWJqZHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTMwMDAsImV4cCI6MjA5MDk2OTAwMH0.pZaDW-vAvkQ3hl2Wlf6-F3NW6IvEk9OsAMm_c1lP_3Y";
